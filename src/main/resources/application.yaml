@@ -1,0 +1,15 @@
+spring:
+  application:
+    name: jwt-auth
+
+  datasource:
+    url: jdbc:postgresql://localhost:5432/demno_auth
+    username: postgres
+    password: password
+    driver-class-name: org.postgresql.Driver
+
+  jpa:
+    hibernate:
+      ddl-auto: none
+    show-sql: true
+    database-platform: org.hibernate.dialect.PostgreSQLDialect
