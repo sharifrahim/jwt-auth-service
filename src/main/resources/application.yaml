@@ -3,7 +3,7 @@ spring:
     name: jwt-auth
 
   datasource:
-    url: jdbc:postgresql://localhost:5432/demno_auth
+    url: jdbc:postgresql://localhost:5432/demo_auth
     username: postgres
     password: password
     driver-class-name: org.postgresql.Driver
