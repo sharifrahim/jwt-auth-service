@@ -34,6 +34,12 @@ public class ApiClientServiceImpl implements ApiClientService {
 
     @Override
     @Transactional(readOnly = true)
+    public Optional<ApiClient> findByClientId(String clientId) {
+        return repository.findByClientId(clientId);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
     public List<ApiClient> findAll() {
         return repository.findAll();
     }
