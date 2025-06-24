@@ -24,4 +24,16 @@ public class ApiClient extends Auditable {
 
     @Column(name = "private_key_enc", nullable = false)
     private String privateKeyEnc;
+
+    @Column(name = "username")
+    private String username;
+
+    @Column(name = "full_name")
+    private String fullName;
+
+    @Column(name = "company_name")
+    private String companyName;
+
+    @Column(name = "registration_no")
+    private String registrationNo;
 }

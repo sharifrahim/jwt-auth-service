@@ -10,18 +10,26 @@ import java.security.interfaces.RSAPrivateKey;
 import java.security.interfaces.RSAPublicKey;
 import java.time.Duration;
 import java.util.Date;
+import java.util.Map;
 
 @Component
 public class JwtUtil {
 
     public String generateToken(String subject, Duration validity, RSAPrivateKey privateKey) {
+        return generateToken(subject, validity, privateKey, null);
+    }
+
+    public String generateToken(String subject, Duration validity, RSAPrivateKey privateKey, Map<String, String> claims) {
         Algorithm algorithm = Algorithm.RSA256(null, privateKey);
         long nowMillis = System.currentTimeMillis();
-        return JWT.create()
+        var builder = JWT.create()
                 .withSubject(subject)
                 .withIssuedAt(new Date(nowMillis))
-                .withExpiresAt(new Date(nowMillis + validity.toMillis()))
-                .sign(algorithm);
+                .withExpiresAt(new Date(nowMillis + validity.toMillis()));
+        if (claims != null) {
+            claims.forEach(builder::withClaim);
+        }
+        return builder.sign(algorithm);
     }
 
     public DecodedJWT validateToken(String token, RSAPublicKey publicKey) {
