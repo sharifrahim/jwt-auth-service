@@ -7,6 +7,8 @@ import javax.crypto.Cipher;
 import javax.crypto.spec.IvParameterSpec;
 import javax.crypto.spec.SecretKeySpec;
 import java.nio.charset.StandardCharsets;
+import java.security.KeyPair;
+import java.security.KeyPairGenerator;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.Arrays;
@@ -52,6 +54,16 @@ public class EncryptionUtil {
             return new String(cipher.doFinal(decoded), StandardCharsets.UTF_8);
         } catch (Exception e) {
             throw new RuntimeException("Error decrypting data", e);
+        }
+    }
+
+    public KeyPair generateKeyPair() {
+        try {
+            KeyPairGenerator generator = KeyPairGenerator.getInstance("RSA");
+            generator.initialize(2048);
+            return generator.generateKeyPair();
+        } catch (NoSuchAlgorithmException e) {
+            throw new IllegalStateException("Unable to generate RSA key pair", e);
         }
     }
 }
