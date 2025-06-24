@@ -11,5 +11,7 @@ public interface ApiClientService {
 
     Optional<ApiClient> findById(Long id);
 
+    Optional<ApiClient> findByClientId(String clientId);
+
     List<ApiClient> findAll();
 }
