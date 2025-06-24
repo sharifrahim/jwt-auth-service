@@ -13,6 +13,9 @@ spring:
       ddl-auto: none
     show-sql: true
     database-platform: org.hibernate.dialect.PostgreSQLDialect
+  sql:
+    init:
+      mode: always
 
 encryption:
   secret-key: changeit12345678
