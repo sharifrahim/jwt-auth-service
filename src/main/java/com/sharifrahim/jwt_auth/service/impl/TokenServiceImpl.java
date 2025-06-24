@@ -18,6 +18,8 @@ import java.security.spec.PKCS8EncodedKeySpec;
 import java.time.Duration;
 import java.util.Base64;
 import java.util.Optional;
+import java.util.HashMap;
+import java.util.Map;
 
 @Service
 @RequiredArgsConstructor
@@ -42,7 +44,12 @@ public class TokenServiceImpl implements TokenService {
 
     private TokenResponseDto generateTokensForClient(ApiClient client, String clientSecret) {
         RSAPrivateKey key = ensurePrivateKey(client, clientSecret);
-        String accessToken = jwtUtil.generateToken(client.getClientId(), Duration.ofHours(1), key);
+        Map<String, String> claims = new HashMap<>();
+        claims.put("username", client.getUsername());
+        claims.put("fullName", client.getFullName());
+        claims.put("companyName", client.getCompanyName());
+        claims.put("registrationNo", client.getRegistrationNo());
+        String accessToken = jwtUtil.generateToken(client.getClientId(), Duration.ofHours(1), key, claims);
         String refreshToken = jwtUtil.generateToken(client.getClientId(), Duration.ofDays(7), key);
         return new TokenResponseDto(accessToken, refreshToken);
     }
