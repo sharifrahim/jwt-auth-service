@@ -8,6 +8,7 @@ import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -16,8 +17,15 @@ import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
 
+/**
+ * Servlet filter that validates JWT tokens on secured endpoints.
+ *
+ * Author: sharif rahim
+ * <a href="https://github.com/sharifrahim">https://github.com/sharifrahim</a>
+ */
 @Component
 @RequiredArgsConstructor
+@Slf4j
 public class TokenFilter extends OncePerRequestFilter {
 
     private final TokenService tokenService;
@@ -34,12 +42,14 @@ public class TokenFilter extends OncePerRequestFilter {
             }
             String token = header.substring(7);
             try {
+                log.debug("Validating token for request to {}", path);
                 tokenService.validateToken(token);
                 DecodedJWT decoded = JWT.decode(token);
                 String username = decoded.getClaim("username").asString();
                 Authentication auth = new UsernamePasswordAuthenticationToken(username, null, java.util.Collections.emptyList());
                 SecurityContextHolder.getContext().setAuthentication(auth);
             } catch (Exception e) {
+                log.warn("Invalid token: {}", e.getMessage());
                 response.sendError(HttpServletResponse.SC_UNAUTHORIZED, "Invalid token");
                 return;
             }
