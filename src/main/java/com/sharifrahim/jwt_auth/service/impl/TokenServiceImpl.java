@@ -61,6 +61,19 @@ public class TokenServiceImpl implements TokenService {
         }
     }
 
+    @Override
+    @Transactional(readOnly = true)
+    public void validateToken(String token) {
+        DecodedJWT decoded = JWT.decode(token);
+        String clientId = decoded.getSubject();
+        ApiClient client = apiClientService.findByClientId(clientId)
+                .orElseThrow(() -> new IllegalArgumentException("Invalid token"));
+        String secret = encryptionUtil.decrypt(client.getClientSecretEnc());
+        RSAPrivateKey privateKey = ensurePrivateKey(client, secret);
+        RSAPublicKey publicKey = toPublicKey(privateKey);
+        jwtUtil.validateToken(token, publicKey);
+    }
+
     private boolean clientSecretMatches(ApiClient client, String clientSecret) {
         String decrypted = encryptionUtil.decrypt(client.getClientSecretEnc());
         return decrypted.equals(clientSecret);
