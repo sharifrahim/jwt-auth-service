@@ -10,6 +10,7 @@ import com.sharifrahim.jwt_auth.service.TokenService;
 import com.sharifrahim.jwt_auth.util.EncryptionUtil;
 import com.sharifrahim.jwt_auth.util.JwtUtil;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -26,25 +27,50 @@ import java.util.Optional;
 import java.util.HashMap;
 import java.util.Map;
 
+/**
+ * Service implementation for working with JWT tokens.
+ * <p>
+ * Author: sharif rahim
+ * <a href="https://github.com/sharifrahim">https://github.com/sharifrahim</a>
+ * </p>
+ */
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class TokenServiceImpl implements TokenService {
 
+    /** Handles retrieval of API client data. */
     private final ApiClientService apiClientService;
+    /** Utility for encrypting/decrypting sensitive data. */
     private final EncryptionUtil encryptionUtil;
+    /** Utility for generating and validating JWT tokens. */
     private final JwtUtil jwtUtil;
 
+    /**
+     * Generate an access and refresh token for the provided client credentials.
+     *
+     * @param request client credentials
+     * @return created tokens if authentication succeeds
+     */
     @Override
     @Transactional
     public Optional<TokenResponseDto> createToken(TokenRequestDto request) {
+        log.info("Creating token for clientId={}", request.getClientId());
         return apiClientService.findByClientId(request.getClientId())
                 .filter(c -> clientSecretMatches(c, request.getClientSecret()))
                 .map(c -> generateTokensForClient(c, request.getClientSecret()));
     }
 
+    /**
+     * Refresh an access token using a previously issued refresh token.
+     *
+     * @param refreshToken refresh token to use
+     * @return new tokens or empty if validation fails
+     */
     @Override
     @Transactional(readOnly = true)
     public Optional<TokenResponseDto> refreshToken(String refreshToken) {
+        log.info("Refreshing token");
         try {
             DecodedJWT decoded = JWT.decode(refreshToken);
             String clientId = decoded.getSubject();
@@ -57,13 +83,20 @@ public class TokenServiceImpl implements TokenService {
                         return generateTokensForClient(client, secret);
                     });
         } catch (Exception e) {
+            log.warn("Failed to refresh token", e);
             return Optional.empty();
         }
     }
 
+    /**
+     * Validate a JWT token and throw an exception if invalid.
+     *
+     * @param token JWT to validate
+     */
     @Override
     @Transactional(readOnly = true)
     public void validateToken(String token) {
+        log.debug("Validating token");
         DecodedJWT decoded = JWT.decode(token);
         String clientId = decoded.getSubject();
         ApiClient client = apiClientService.findByClientId(clientId)
@@ -91,6 +124,10 @@ public class TokenServiceImpl implements TokenService {
         return new TokenResponseDto(accessToken, refreshToken);
     }
 
+    /**
+     * Ensure that the client has an RSA private key.
+     * Generates a new key pair if none exists and persists the values.
+     */
     private RSAPrivateKey ensurePrivateKey(ApiClient client, String clientSecret) {
         String privateKeyPlain = encryptionUtil.decrypt(client.getPrivateKeyEnc());
         if (privateKeyPlain == null || privateKeyPlain.isBlank()) {
@@ -101,9 +138,14 @@ public class TokenServiceImpl implements TokenService {
             client.setClientSecretEnc(clientSecret);
             apiClientService.save(client);
         }
-        return toPrivateKey(privateKeyPlain);
+        RSAPrivateKey result = toPrivateKey(privateKeyPlain);
+        log.debug("Loaded private key for client {}", client.getClientId());
+        return result;
     }
 
+    /**
+     * Convert a base64 encoded string to a {@link RSAPrivateKey}.
+     */
     private RSAPrivateKey toPrivateKey(String key) {
         try {
             byte[] bytes = Base64.getDecoder().decode(key);
@@ -115,6 +157,9 @@ public class TokenServiceImpl implements TokenService {
         }
     }
 
+    /**
+     * Derive the corresponding public key from an RSA private key.
+     */
     private RSAPublicKey toPublicKey(RSAPrivateKey privateKey) {
         try {
             RSAPrivateCrtKey crtKey = (RSAPrivateCrtKey) privateKey;

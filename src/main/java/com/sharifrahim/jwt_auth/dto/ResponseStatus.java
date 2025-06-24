@@ -2,6 +2,12 @@ package com.sharifrahim.jwt_auth.dto;
 
 import org.springframework.http.HttpStatus;
 
+/**
+ * Enumeration of API response statuses returned to clients.
+ *
+ * Author: sharif rahim
+ * <a href="https://github.com/sharifrahim">https://github.com/sharifrahim</a>
+ */
 public enum ResponseStatus {
     SUCCESS(HttpStatus.OK, "Success"),
     UNAUTHORIZED(HttpStatus.UNAUTHORIZED, "Unauthorized");

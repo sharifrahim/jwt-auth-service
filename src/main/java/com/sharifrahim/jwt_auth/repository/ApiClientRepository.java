@@ -6,6 +6,9 @@ import org.springframework.stereotype.Repository;
 
 import java.util.Optional;
 
+/**
+ * JPA repository for {@link ApiClient} entities.
+ */
 @Repository
 public interface ApiClientRepository extends JpaRepository<ApiClient, Long> {
 

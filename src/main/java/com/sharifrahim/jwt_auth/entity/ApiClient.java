@@ -5,6 +5,12 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+/**
+ * Entity representing an API client that can request JWT tokens.
+ *
+ * Author: sharif rahim
+ * <a href="https://github.com/sharifrahim">https://github.com/sharifrahim</a>
+ */
 @Entity
 @Table(name = "api_client")
 @Getter
